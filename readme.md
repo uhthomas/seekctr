@@ -56,4 +56,8 @@ for i := len(iv[:]) - 1; i >= 0; i-- {
 
 // Reinitialize cipher
 s := cipher.NewCTR(b, iv[:])
+
+// Discard n bytes
+d := make([]byte, int(offset) % x.b.BlockSize())
+s.XORKeyStream(d, d)
 ```
