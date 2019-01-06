@@ -1,7 +1,7 @@
 # seekctr [![GoDoc](https://godoc.org/github.com/uhthomas/seekctr?status.svg)](https://godoc.org/github.com/uhthomas/seekctr)
 
 ## Why?
-The [native Go implementation](https://golang.org/pkg/crypto/cipher) does not provide a `Seek` method and since these stream ciphers _are_ seekable since they are xor stream ciphers, I implemented a Seekable CTR cipher.
+The [native Go implementation](https://golang.org/pkg/crypto/cipher) does not provide a `Seek` method and since these stream ciphers _are_ seekable since they are xor stream ciphers, I implemented a seekable CTR cipher.
 
 ## Usage
 ```go
