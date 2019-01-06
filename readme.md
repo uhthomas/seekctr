@@ -48,12 +48,12 @@ if err != nil { ... }
 binary.BigEndian.PutUint64(boffset[8:], offset)
 // Add offset to iv
 var c uint16
-for i := len(b) - 1; i >= 0; i-- {
+for i := len(iv[:]) - 1; i >= 0; i-- {
 	c = uint16(iv[i]) + uint16(boffset[i]) + c
 	iv[i] = byte(c)
 	c >>= 8
 }
 
 // Reinitialize cipher
-s := cipher.NewCTR(b, iv)
+s := cipher.NewCTR(b, iv[:])
 ```
