@@ -8,8 +8,8 @@ import (
 // Reader wraps and io.Reader and will decrypt anything read from it using the
 // ctr.
 type Reader struct {
-	*ctr
-	r io.Reader
+	ctr *ctr
+	r   io.Reader
 }
 
 // NewReader returns an io.ReadSeekCloser. The key must be 16, 24 or 32 bytes
@@ -25,7 +25,7 @@ func NewReader(r io.Reader, key, iv []byte) (*Reader, error) {
 // Read will read len(p) bytes from r and decrypt them using ctr.
 func (r *Reader) Read(p []byte) (n int, err error) {
 	n, err = r.r.Read(p)
-	r.XORKeyStream(p[:n], p[:n])
+	r.ctr.XORKeyStream(p[:n], p[:n])
 	return
 }
 
@@ -34,7 +34,7 @@ func (r *Reader) Read(p []byte) (n int, err error) {
 func (r *Reader) Seek(offset int64, whence int) (ret int64, err error) {
 	if s, ok := r.r.(io.Seeker); ok {
 		ret, err = s.Seek(offset, whence)
-		r.seek(ret)
+		r.ctr.seek(ret)
 	}
 	return
 }
@@ -50,8 +50,8 @@ func (r *Reader) Close() (err error) {
 // Writer wraps an io.Writer and will encrypt anything written to it using the
 // ctr.
 type Writer struct {
-	*ctr
-	w io.Writer
+	ctr *ctr
+	w   io.Writer
 }
 
 // NewWriter returns an io.WriteSeekCloser. The key must be 16, 24 or 32 bytes
@@ -67,7 +67,7 @@ func NewWriter(w io.Writer, key, iv []byte) (*Writer, error) {
 // Write encrypts b using ctr and then writes to w.
 func (w *Writer) Write(b []byte) (n int, err error) {
 	c := make([]byte, len(b))
-	w.XORKeyStream(c, b)
+	w.ctr.XORKeyStream(c, b)
 	return w.w.Write(c)
 }
 
@@ -76,7 +76,7 @@ func (w *Writer) Write(b []byte) (n int, err error) {
 func (w *Writer) Seek(offset int64, whence int) (ret int64, err error) {
 	if s, ok := w.w.(io.Seeker); ok {
 		ret, err = s.Seek(offset, whence)
-		w.seek(ret)
+		w.ctr.seek(ret)
 	}
 	return
 }
