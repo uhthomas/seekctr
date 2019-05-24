@@ -19,7 +19,7 @@ func NewReader(r io.Reader, key, iv []byte) (*Reader, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Reader{newCTR(b, iv), r}, nil
+	return &Reader{ctr: newCTR(b, iv), r: r}, nil
 }
 
 // Read will read len(p) bytes from r and decrypt them using ctr.
@@ -61,7 +61,7 @@ func NewWriter(w io.Writer, key, iv []byte) (*Writer, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Writer{newCTR(b, iv), w}, nil
+	return &Writer{ctr: newCTR(b, iv), w: w}, nil
 }
 
 // Write encrypts b using ctr and then writes to w.
