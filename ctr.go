@@ -2,7 +2,6 @@ package seekctr
 
 import (
 	"crypto/cipher"
-	"encoding/binary"
 )
 
 const streamBufferSize = 512
@@ -19,11 +18,18 @@ func newCTR(block cipher.Block, iv []byte) *ctr {
 	if len(iv) != block.BlockSize() {
 		panic("IV length must equal block size")
 	}
+
 	bufSize := streamBufferSize
 	if bs := block.BlockSize(); bufSize < bs {
 		bufSize = bs
 	}
-	return &ctr{block, dup(iv), dup(iv), make([]byte, 0, bufSize), 0}
+
+	return &ctr{
+		b:   block,
+		ctr: dup(iv),
+		iv:  dup(iv),
+		out: make([]byte, 0, bufSize),
+	}
 }
 
 func (x *ctr) XORKeyStream(dst, src []byte) {
@@ -37,22 +43,19 @@ func (x *ctr) XORKeyStream(dst, src []byte) {
 	}
 }
 
-// seek will take the offset and then divide it by the blocksize for the chunk
+// seek will take the offset and then divide it by the block size for the chunk
 // offset before refilling the buffer.
 func (x *ctr) seek(offset int64) {
 	// offset in chunks
 	chunks := uint64(int(offset) / x.b.BlockSize())
-	// convert chunks to []byte
-	b := make([]byte, len(x.iv))
-	binary.BigEndian.PutUint64(b[len(b)-8:], chunks)
 
 	// add x.iv (a) and chunks (b) with the result being x.ctr and c
 	// representing the carry
 	var c uint16
-	for i := len(b) - 1; i >= 0; i-- {
-		c = uint16(x.iv[i]) + uint16(b[i]) + c
+	for i := len(x.ctr) - 1; chunks > 0 && i >= 0; i-- {
+		c = uint16(x.iv[i]) + uint16(chunks&0xFF) + c
 		x.ctr[i] = byte(c)
-		c >>= 8
+		c, chunks = c>>8, chunks>>8
 	}
 
 	x.outUsed = len(x.out)

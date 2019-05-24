@@ -9,7 +9,9 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
+	"os"
 
 	"github.com/uhthomas/seekctr"
 )
@@ -38,26 +40,30 @@ func main() {
 ```
 
 ## Note
-Alternatively, although seeking would be a lot less efficient, to use the original implementation, the CTR can be re-initialized with the modified iv and then n bytes discarded. For example:
+Alternatively, although seeking would be less efficient, to use the original implementation, the CTR can be re-initialized with the modified iv and then n bytes discarded. For example:
 ```go
-offset := uint64(4 << 10)
-var key, iv, boffset [16]byte
+var key, iv [16]byte
+
 b, err := aes.NewCipher(key[:])
 if err != nil { ... }
-// Convert offset to [16]byte
-binary.BigEndian.PutUint64(boffset[8:], offset)
-// Add offset to iv
+
+offset := uint64(4 << 10)
+
+// offset in chunks
+chunks := uint64(int(offset) / b.BlockSize())
+
+// iv += offset
 var c uint16
 for i := len(iv[:]) - 1; i >= 0; i-- {
-	c = uint16(iv[i]) + uint16(boffset[i]) + c
+	c = uint16(iv[i]) + uint16(chunks & 0xFF) + c
 	iv[i] = byte(c)
-	c >>= 8
+	c, chunks = c >> 8, chunks >> 8
 }
 
 // Reinitialize cipher
 s := cipher.NewCTR(b, iv[:])
 
 // Discard n bytes
-d := make([]byte, int(offset) % x.b.BlockSize())
+d := make([]byte, int(offset) % b.BlockSize())
 s.XORKeyStream(d, d)
 ```
