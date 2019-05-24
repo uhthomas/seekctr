@@ -55,7 +55,7 @@ func (x *ctr) seek(offset int64) {
 	for i := len(x.ctr) - 1; chunks > 0 && i >= 0; i-- {
 		c = uint16(x.iv[i]) + uint16(chunks&0xFF) + c
 		x.ctr[i] = byte(c)
-		c, chunks = c>>8, chunks>>8
+		chunks, c = chunks>>8, c>>8
 	}
 
 	x.outUsed = len(x.out)
