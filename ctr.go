@@ -5,11 +5,9 @@ import "crypto/cipher"
 const streamBufferSize = 512
 
 type ctr struct {
-	b       cipher.Block
-	ctr     []byte
-	iv      []byte
-	out     []byte
-	outUsed int
+	b            cipher.Block
+	ctr, iv, out []byte
+	outUsed      int
 }
 
 func newCTR(block cipher.Block, iv []byte) *ctr {
