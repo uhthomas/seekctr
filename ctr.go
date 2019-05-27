@@ -1,8 +1,6 @@
 package seekctr
 
-import (
-	"crypto/cipher"
-)
+import "crypto/cipher"
 
 const streamBufferSize = 512
 
