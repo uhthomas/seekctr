@@ -56,8 +56,7 @@ chunks := uint64(int(offset) / b.BlockSize())
 var c uint16
 for i := len(iv[:]) - 1; i >= 0; i-- {
 	c = uint16(iv[i]) + uint16(chunks & 0xFF) + c
-	iv[i] = byte(c)
-	c, chunks = c >> 8, chunks >> 8
+	iv[i], c, chunks = byte(c), c >> 8, chunks >> 8
 }
 
 // Reinitialize cipher

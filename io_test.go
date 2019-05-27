@@ -2,7 +2,9 @@ package seekctr_test
 
 import (
 	"bytes"
+	"crypto/aes"
 	"crypto/rand"
+	"errors"
 	"io"
 	"io/ioutil"
 	"testing"
@@ -89,9 +91,23 @@ func TestCipherSeek(t *testing.T) {
 	}
 }
 
-type infiniteReader struct{}
+type FakeReadWriteSeeker int64
 
-func (infiniteReader) Read(b []byte) (int, error) { return len(b), nil }
+func (s *FakeReadWriteSeeker) Write(b []byte) (int, error) { return len(b), nil }
+
+func (s *FakeReadWriteSeeker) Read(b []byte) (int, error) { return len(b), nil }
+
+func (s *FakeReadWriteSeeker) Seek(offset int64, whence int) (int64, error) {
+	switch whence {
+	case io.SeekStart:
+		*s = FakeReadWriteSeeker(offset)
+	case io.SeekCurrent:
+		*s += FakeReadWriteSeeker(offset)
+	default:
+		return 0, errors.New("invalid whence")
+	}
+	return int64(*s), nil
+}
 
 func BenchmarkReader(b *testing.B) {
 	var key, iv [16]byte
@@ -102,7 +118,7 @@ func BenchmarkReader(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	r, err := seekctr.NewReader(new(infiniteReader), key[:], iv[:])
+	r, err := seekctr.NewReader(new(FakeReadWriteSeeker), key[:], iv[:])
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -139,6 +155,23 @@ func BenchmarkWriter(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		_, err := w.Write(out[:])
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkSeek(b *testing.B) {
+	w, err := seekctr.NewWriter(new(FakeReadWriteSeeker), make([]byte, aes.BlockSize), make([]byte, aes.BlockSize))
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := int64(0); i < int64(b.N); i++ {
+		_, err := w.Seek(i, io.SeekCurrent)
 		if err != nil {
 			b.Fatal(err)
 		}
