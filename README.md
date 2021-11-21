@@ -1,9 +1,9 @@
 # seekctr [![GoDoc](https://godoc.org/github.com/uhthomas/seekctr?status.svg)](https://godoc.org/github.com/uhthomas/seekctr)
 
-## Why?
-The [native Go implementation](https://golang.org/pkg/crypto/cipher) does not provide a `Seek` method and since these stream ciphers _are_ seekable since they are xor stream ciphers, I implemented a seekable CTR cipher.
+[cipher.Stream](https://pkg.go.dev/crypto/cipher#Stream) does not implement [io.Seeker](https://pkg.go.dev/io#Seeker) despite XOR stream ciphers being seekable.
 
 ## Usage
+
 ```go
 package main
 
@@ -40,7 +40,9 @@ func main() {
 ```
 
 ## Note
-Alternatively, although seeking would be less efficient, to use the original implementation, the CTR can be re-initialized with the modified iv and then n bytes discarded. For example:
+
+Recreating the original stream cipher with a new initialization vector (where `iv += offset / block size`) and discarding the remaining bytes (`offset % block size`) may be preferrable.
+
 ```go
 var key, iv [16]byte
 
