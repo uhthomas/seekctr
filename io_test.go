@@ -10,7 +10,7 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/uhthomas/seekctr"
+	"github.com/Kwusen/seekctr"
 )
 
 func TestCipher(t *testing.T) {
