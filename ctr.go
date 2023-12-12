@@ -48,7 +48,7 @@ func (x *ctr) seek(offset int64) {
 	// add x.iv (a) and chunks (b) with the result being x.ctr and c
 	// representing the carry
 	var c uint16
-	for i := len(x.ctr) - 1; chunks > 0 && i >= 0; i-- {
+	for i := len(x.ctr) - 1; i >= 0; i-- {
 		c = uint16(x.iv[i]) + uint16(chunks&0xFF) + c
 		x.ctr[i], chunks, c = byte(c), chunks>>8, c>>8
 	}
