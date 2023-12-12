@@ -119,8 +119,6 @@ func TestCipherSeekStart(t *testing.T) {
 	Sed vel tortor gravida, dapibus enim non, fringilla libero. Aenean vitae odio eu diam sodales mollis vitae ac ipsum. Morbi eget arcu sem. Curabitur cursus dui orci, lobortis eleifend nibh egestas vel. Nunc euismod tellus eget consectetur viverra. Quisque at ante eu urna eleifend sagittis. Sed id metus dapibus, placerat ante in, facilisis velit. Aliquam erat volutpat. Nunc et mi sit amet enim tincidunt gravida sed vitae metus. Praesent gravida mauris ut sem suscipit, vitae ornare tellus gravida. Nullam fermentum risus eget nisi malesuada finibus. Praesent nisl eros orci aliquam.	
 	`)
 
-	fmt.Println("data", len(data))
-
 	bytesReader := bytes.NewReader(data)
 	_, err = io.Copy(w, bytesReader)
 	if err != nil {
@@ -144,11 +142,10 @@ func TestCipherSeekStart(t *testing.T) {
 	})
 
 	t.Run("seek start & readall", func(t *testing.T) {
-		seekStart, err := r.Seek(0, io.SeekStart)
+		_, err := r.Seek(0, io.SeekStart)
 		if err != nil {
 			t.Fatal(err)
 		}
-		fmt.Println("seek start", seekStart)
 
 		readBack, err := io.ReadAll(r)
 		if err != nil {
@@ -160,11 +157,10 @@ func TestCipherSeekStart(t *testing.T) {
 	})
 
 	t.Run("seek end -10 & readall", func(t *testing.T) {
-		seekEnd, err := r.Seek(-10, io.SeekEnd)
+		_, err := r.Seek(-10, io.SeekEnd)
 		if err != nil {
 			t.Fatal(err)
 		}
-		fmt.Println("seek end", seekEnd)
 
 		readBack, err := io.ReadAll(r)
 		if err != nil {
@@ -190,8 +186,6 @@ func TestCipherSeekStart(t *testing.T) {
 			t.Errorf("got %s, expected %s", string(readBack), string(data))
 		}
 	})
-
-	// rdr := seekctr.NewReader()
 }
 
 type FakeReadWriteSeeker int64
